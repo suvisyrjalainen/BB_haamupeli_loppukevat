@@ -71,6 +71,7 @@ button {
     border: 2px solid #333;
     padding: 0px;
     background-color: rgba(221, 221, 221, 0.8);
+    z-index: 10;
     } 
 
  .cell {
@@ -124,4 +125,28 @@ button {
     top: 10px;
     left: 10px;
     z-index: 10;
+}
+
+#game-over-screen {
+    display: none;
+    background-color: rgba(241, 234, 234, 0.8);
+    color: rgb(14, 11, 11);
+    padding: 20px;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 10px;
+    z-index: 9999; /* jotta on päällimmmäisenä ja input kenttään pystyy kirjoittamaan */
+}
+
+#best-scores-board {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px;
+    color: #fff;
+    z-index: 10;
+    text-align: center;
+    list-style-position: inside; /* Tämä tuo järjestysnumerot sisälle lista elementtiin */
 }

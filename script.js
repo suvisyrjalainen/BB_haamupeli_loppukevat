@@ -9,11 +9,31 @@ let ghostSpeed = 1000; // Aloitusnopeus haamuille (millisekunteina)
 let score = 0;
 
 
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA6l4lBHnElz_UiATm5rH8hApktFQZljaY",
+  authDomain: "haamupeli.firebaseapp.com",
+  projectId: "haamupeli",
+  storageBucket: "haamupeli.firebasestorage.app",
+  messagingSenderId: "450378243749",
+  appId: "1:450378243749:web:eefd9633733106d413b74c",
+  measurementId: "G-8VS1QR4L3R"
+};
+
+// 🚀 Alusta Firebase ja Firestore
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+showTop10();
+
 document.getElementById("new-game-btn").addEventListener('click', startGame);
+document.getElementById("save-scores-btn").addEventListener('click', saveScore);
+document.getElementById('exit-btn').addEventListener('click', exitGame);
 
 function updateScoreBoard(points) {
    const scoreBoard = document.getElementById('score-board');
    score = score + points;
+   console.log(score);
    scoreBoard.textContent = `Pisteet: ${score}`;
   }
 
@@ -47,7 +67,9 @@ document.addEventListener('keydown', (event) => {
   break;
    }
   }
-  event.preventDefault(); // Prevent default scrolling behaviour
+  if (document.activeElement.tagName !== "INPUT") {
+    e.preventDefault();
+  }
   });
 
   
@@ -71,8 +93,10 @@ function calculateCellSize() {
 }
 
 function startGame(){
-    document.getElementById('intro-screen').style.display = 'none';
+    document.getElementById('intro-page').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
+
+    
 
     isGameRunning = true; // Nollaa pelitilan tila
 
@@ -366,11 +390,10 @@ drawBoard(board);
 function endGame() {
   isGameRunning = false; // Set the game as game over
   alert('Game Over! The ghost caught you!');
-   // Show intro-view ja hide game-view
+ 
   clearInterval(ghostInterval);
-  document.getElementById('intro-screen').style.display = 'block';
-  document.getElementById('game-screen').style.display = 'none';
-
+  document.getElementById('game-over-screen').style.display = 'block';
+  
 }
 
 function startNextLevel() {
@@ -391,4 +414,59 @@ function startNextLevel() {
     ghostInterval = setInterval(moveGhosts, ghostSpeed)
     }, 1000);
   
+}
+
+function saveScore() {
+  console.log('saveScore');
+  const playerName = document.getElementById('player-name').value;
+  console.log(playerName);
+
+  if (playerName.trim() === '') {
+    alert('Please enter your name.');
+    return;
+  }
+
+  db.collection("scores").add({
+    name: playerName,
+    score: score,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    
+  });
+
+  exitGame();
+}
+
+function showTop10() {
+  console.log('showTop10');
+  db.collection("scores")
+    .orderBy("score", "desc")
+    .limit(10)
+    .get()
+    .then(snapshot => {
+      const container = document.getElementById("top-ten-scores");
+  
+      // Tyhjennetään edellinen sisältö
+      container.innerHTML = "";
+  
+      // Luodaan uusi ol-lista
+      const ol = document.createElement("ol");
+  
+      // Lisätään jokainen li-elementti ol:n sisään
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        li.textContent = `${data.name}: ${data.score}`;
+        ol.appendChild(li);
+      });
+  
+      // Lisätään valmis lista sivulle
+      container.appendChild(ol);
+    });
+}
+
+function exitGame() {
+  document.getElementById('intro-page').style.display = 'block';
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('game-over-screen').style.display = 'none';
+  showTop10();
 }
